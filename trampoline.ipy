@@ -1,0 +1,80 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Apr  5 21:53:09 2024
+
+@author: adrie
+"""
+import matplotlib.animation as ani
+import numpy as np
+%matplotlib qt
+    
+
+
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+#import matplotlib
+from drawing import make_crown#, circle
+#matplotlib.use('TkAgg')
+
+
+
+
+def get_frame(j=0,n_frame=200,reverse=False,M=500):
+    """
+    Function to generate frames
+
+    """
+    A=np.zeros((M,M))
+    A=A+np.arange(M)/2
+    S=n_frame
+    for j in range(S*2):
+        if (j//S)%2==0 or not reverse:
+            j=j%S
+            r1=10+j
+            img=make_crown(j,n_ellipses=7,r=r1,R=25,M=M)#inner circles
+            img=img+make_crown(j-25,n_ellipses=7,r=10,R=r1+25,M=M,S=S)#outer circles
+            #mask=img>0
+            #img=A*(1-mask)+mask*125
+            if j%10==0:
+                print(j)
+        else:
+            j=S-j%S
+            print(j)
+            r1=10+j
+            img=make_crown(j,r=r1,R=25,M=M)
+            img=img+make_crown(j-25,r=10,R=r1+25,M=M)
+            #mask=img>0
+            #img=A*(1-mask)+mask*125
+            if j%10==0:
+                print(j)
+        yield img/255
+
+
+
+# Initialize figure and axis
+fig, ax = plt.subplots(figsize=(8,8))
+M=500
+img=np.zeros((M,M))#.astype(float)+1
+
+n_frame=250
+
+# Initialize image plot
+gen=get_frame(j=0,n_frame=n_frame,M=M)
+img=next(gen)
+img = ax.imshow(img, cmap='Blues')
+ax.axis("off")
+
+# Function to update the plot
+def update(frame):
+    img.set_array(frame)
+    return img,
+
+# Create animation
+ani = FuncAnimation(fig, update, frames=get_frame, interval=25,save_count=n_frame)
+
+# Save animation to a file
+path="./trampoline"
+ani.save(path+'.mp4', writer='ffmpeg')  # Requires ffmpeg to be installed
+
+# Display animation (optional)
+plt.show()
